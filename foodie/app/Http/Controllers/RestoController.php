@@ -3,10 +3,14 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Http\Requests\OwnerRegRequest;
 use App\Restaurants;
 use App\User;
 use App\Foods;
 use App\Orders;
+use App\Owners;
+use Session;
+use Crypt;
 use App\OrdersDetails;
 use DB;
 
@@ -18,23 +22,31 @@ class RestoController extends Controller
         return view('/list',["restaurants" => $restaurants]);
     }
 
-    public function add(Request $req)
+    public function ownerreg(OwnerRegRequest $req)
     {
+        $owner = new Owners;
+        $owner->name=$req->input('name');
+        $owner->email=$req->input('email');
+        $owner->phone=$req->input('phone');
+        $owner->password=Crypt::encrypt($req->input('password'));
+        $owner->save();
+
         
-       request()->validate([
-            'restoname' => 'required',
-            'email' => 'required',
-            'address' => 'required',
-            // 'foodname[]' => 'required',
-            // 'dept[]' => 'required',
-            // 'price[]' => 'required'
-       ]);
+        
+    //    request()->validate([
+    //         'restoname' => 'required',
+    //         'email' => 'required',
+    //         'address' => 'required',
+    //         // 'foodname[]' => 'required',
+    //         // 'dept[]' => 'required',
+    //         // 'price[]' => 'required'
+    //    ]);
 
        $resto = new Restaurants;
        $resto->restoname=$req->input('restoname');
-       $resto->email=$req->input('email');
+    //    $resto->email=$req->input('email');
        $resto->address=$req->input('address');
-       $resto->user_id = auth()->id();
+       $resto->owner_id = $owner->id;
        $resto->save();
 
     //    $food = new Foods;
@@ -55,9 +67,9 @@ class RestoController extends Controller
            );
         Foods::insert($food);
        } 
-
-       $req->session()->flash('status', 'Restaurant added successfully.');
-       return redirect('list');
+       $req->session()->put('owid', $owner->id);
+       $req->session()->put('owners', $owner->name);
+       return redirect('/owner/profile');
     }
 
     public function edit(Restaurants $restaurants)
@@ -72,21 +84,24 @@ class RestoController extends Controller
 
     public function update(Request $req)
     {
-        
         request()->validate([
             'restoname' => 'required',
-            'email' => 'required',
             'address' => 'required',
-            // 'foodname[]' => 'required',
-            // 'dept[]' => 'required',
-            // 'price[]' => 'required|numeric'
-       ]);
+        ]);
+        
+    //     request()->validate([
+    //         'restoname' => 'required',
+    //         'email' => 'required',
+    //         'address' => 'required',
+    //         // 'foodname[]' => 'required',
+    //         // 'dept[]' => 'required',
+    //         // 'price[]' => 'required|numeric'
+    //    ]);
         
        $resto = Restaurants::findOrFail($req->input('id'));
        $resto->restoname=$req->input('restoname');
-       $resto->email=$req->input('email');
        $resto->address=$req->input('address');
-       $resto->user_id=$req->input('user_id');
+       $resto->owner_id=$req->input('owner_id');
        $resto->save();
 
 
@@ -160,19 +175,29 @@ class RestoController extends Controller
     }
     
        $req->session()->flash('status', 'Restaurant updated successfully.');
-       return redirect('list');
+       return redirect('/owner/restaurant');
     }
 
-    public function restaurant(Restaurants $restaurants)
+    public function ownerrestaurant()
     {
+        // dd(session()->get('owid'));
+        $sid = session()->get('owid');
+        // dd($sid);
+        $owner = Owners::where('id', '=', $sid)->first();
+        // dd($owner);
+        $restaurants = Restaurants::where('owner_id', '=', $owner->id)->first();
+        
         $foods = Foods::where('resto_id', '=', $restaurants->id)->get();
 
         
-        return view('/restaurant',["restaurants" => $restaurants], ["foods" => $foods]);
+        return view('/owrestaurant',["restaurants" => $restaurants], ["foods" => $foods]);
     }
 
     public function order(Request $req)
     {
+        $oid = auth()->id();
+        $user = User::where('id', '=', $oid)->first();
+        // dd($user->name);
         request()->validate([
             'daddress' => 'required',
             'pnumber' => 'required|numeric',
@@ -181,6 +206,8 @@ class RestoController extends Controller
         
         $orders = new Orders;
         $orders->ouser_id=auth()->id();
+        $orders->oresto_id=$req->input('id');
+        $orders->oname=$user->name;
         $orders->pnumber=$req->input('pnumber');
         $orders->daddress=$req->input('daddress');
         
@@ -218,9 +245,9 @@ class RestoController extends Controller
     {
         $user = User::where('id', '=', auth()->id())->first();
         // dd($user->id);
-        $restaurants = Restaurants::where('user_id', '=', $user->id)->get();
+        // $restaurants = Restaurants::where('user_id', '=', $user->id)->get();
         // dd($user, $restaurants);
-        return view('/profile', ["user" => $user], ["restaurants" => $restaurants]);
+        return view('/profile', ["user" => $user]);
     }
 
     public function orderhistory()
@@ -229,5 +256,70 @@ class RestoController extends Controller
         $orders = Orders::where('ouser_id', '=', $user->id)->get();
         // dd($orders);
         return view('/orderhistory', ['user' => $user], ['orders' => $orders]);
+    }
+
+    public function ownerlog(Request $req)
+    {
+        $owner = Owners::where('email', '=', $req->input('email'))->first();
+        
+        
+        if(Crypt::decrypt($owner->password)==$req->input('password'))
+        {
+            $req->session()->put('owid', $owner->id);
+            $req->session()->put('owners', $owner->name);
+            return redirect('/owner/profile');
+        }
+    }
+
+    public function restaurant(Restaurants $restaurants)
+    {
+        $foods = Foods::where('resto_id', '=', $restaurants->id)->get();
+
+        
+        return view('/restaurant',["restaurants" => $restaurants], ["foods" => $foods]);
+    }
+
+    public function oworders()
+    {
+        $sid = session()->get('owid');
+        $owner = Owners::where('id', '=', $sid)->first();
+        // dd($owner);
+        $restaurants = Restaurants::where('owner_id', '=', $owner->id)->first();
+        // dd($restaurants->id);
+        $orders = Orders::where('oresto_id', '=', $restaurants->id)->get();
+        // dd($orders);
+        // dd($orders->first());
+        if($orders->first() == null)
+        {
+            session()->flash('status', 'Your Restaurant has no orders yet.'); 
+        }
+        
+        return view('/oworders',["orders" => $orders]);
+    }
+
+    public function owprofile()
+    {
+        $sid = session()->get('owid');
+        $owner = Owners::where('id', '=', $sid)->first();
+        // dd($owner->email);
+        return view('/ownerprofile', ["owner" => $owner]);
+    }
+
+    public function oworderdetails(Orders $orders)
+    {
+        // dd($orders->ouser_id);
+        // dd($orders->oid);
+        // dd($ordersdetails->get());
+        $orderdetails = OrdersDetails::where('od_oid', '=', $orders->oid)->get();
+        // dd($orderdetails);
+        return view('/oworderdetails', ["orders" => $orders], ["orderdetails" => $orderdetails]);
+    }
+
+    public function usorderdetails(Orders $orders)
+    {
+        // dd($orders);
+        $orderdetails = OrdersDetails::where('od_oid', '=', $orders->oid)->get();
+        // dd($orderdetails);
+        return view('/usorderdetails', ["orders" => $orders], ["orderdetails" => $orderdetails]);
     }
 }

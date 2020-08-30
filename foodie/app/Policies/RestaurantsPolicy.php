@@ -33,7 +33,7 @@ class RestaurantsPolicy
         // $userid = $restaurants->user_id;
         // return $userid === $user->id;
         // return $user->id === $restaurants->user_id;
-        return $restaurants->user->is($user);
+        // return $restaurants->user->is($user);
         
     }
 
@@ -110,7 +110,7 @@ class RestaurantsPolicy
         
         // return $restaurants->user->is($user);
 
-        return $user->id != $restaurants->user_id;
+        // return $user->id != $restaurants->user_id;
         
     }
 

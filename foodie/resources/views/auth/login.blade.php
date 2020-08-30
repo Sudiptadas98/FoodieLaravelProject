@@ -1,11 +1,12 @@
-@extends('layouts.app')
+@extends('layouts.user')
 
 @section('content')
+<section class="top-dish-area section-gap" id="dish">
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card">
-                <div class="card-header">{{ __('Login') }}</div>
+                <div class="card-header">{{ __('User Login') }}</div>
 
                 <div class="card-body">
                     <form method="POST" action="{{ route('login') }}">
@@ -70,4 +71,5 @@
         </div>
     </div>
 </div>
+</section>
 @endsection

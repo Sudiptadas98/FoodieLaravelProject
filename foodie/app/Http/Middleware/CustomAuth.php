@@ -5,6 +5,8 @@ namespace App\Http\Middleware;
 use Closure;
 use App\User;
 use App\Restaurants;
+use Session;
+use Auth;
 
 class CustomAuth
 {
@@ -21,6 +23,23 @@ class CustomAuth
         //     return $next($request);
         // }
         // dd($request->user()->id);
+        // echo "hi from MW";
+        $path=$request->path();
+        if(($path=="ownerlog" || $path=="ownerreg") && (Session::get('owid') || Auth::check()))
+        {
+            if(Auth::check())
+            {
+                return redirect('/');
+            }
+            else if(Session::get('owid'))
+            {
+                return redirect('/owner/profile');
+            }
+        }
+        else if(($path!="ownerlog" && !Session::get('owid')) && ($path!="ownerreg" && !Session::get('owid')))
+        {
+            return redirect('/ownerlog');
+        }
         
         
         return $next($request);

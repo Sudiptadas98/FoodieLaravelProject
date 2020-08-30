@@ -3,6 +3,9 @@
 namespace App\Http\Middleware;
 
 use Illuminate\Auth\Middleware\Authenticate as Middleware;
+use Closure;
+use Session;
+use Auth;
 
 class Authenticate extends Middleware
 {
@@ -12,10 +15,36 @@ class Authenticate extends Middleware
      * @param  \Illuminate\Http\Request  $request
      * @return string|null
      */
-    protected function redirectTo($request)
+    // protected function redirectTo($request)
+    // {
+    //     if (! $request->expectsJson()) {
+
+    //         if(Session::get('owid'))
+    //         {
+    //             return route('owner/profile');
+    //         }
+    //         else
+    //         {
+    //             return route('login');
+    //         }
+    //         return route('login');
+    //     }
+    // }
+
+    public function handle($request, Closure $next)
     {
-        if (! $request->expectsJson()) {
-            return route('login');
+        if (!Auth::check()) {
+
+            if(Session::get('owid'))
+            {
+                return redirect('owner/profile');
+            }
+            else
+            {
+                return redirect('login');
+            }
+            // return route('login');
         }
+        return $next($request);
     }
 }

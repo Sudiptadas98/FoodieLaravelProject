@@ -1,28 +1,84 @@
-@extends('layouts.app')
+@extends('layouts.user')
 
 @section('content')
-<form method="post" action="/restaurant/{restaurants}">
+
+<section class="blog-area section-gap" id="blog">
+				<div class="container">
+					<div class="row d-flex justify-content-center">
+						<div class="menu-content pb-70 col-lg-8">
+							<div class="title text-center">
+                <div class="typography">
+								  <h1 class="mb-10">Order Your Food Now</h1>
+								  <!-- <p>Delicious Receipes</p> -->
+                </div>
+								<!-- <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore  et dolore magna aliqua.</p> -->
+							</div>
+						</div>
+					</div>					
+					
+          <form method="post" action="/restaurant/{restaurants}">
 @csrf
 <div class="container">
 <div class="row">
-  <div class="col-lg-8">
-    <input type="hidden" name="user_id" value="{{$restaurants->user_id}}">
+  <div class="col">
+    <input type="hidden" name="id" value="{{$restaurants->id}}">
     <div class="row justify-content-center">
-        <h1 name="restoname">{{$restaurants->restoname}}</h1>
-    </div>
-    <div class="row justify-content-center">
-        <p name="email">{{$restaurants->email}}</p>
+        <h1 style="color:#FF0000" name="restoname">{{$restaurants->restoname}}</h1>
     </div>
     <div class="row justify-content-center">
         <p name="address">{{$restaurants->address}}</p>
     </div>
   </div>
-  @can ('order', $restaurants)
-    <div class="col-lg-4">
-      <div class="card mb-3">
+  
+    
+    
+    </div>
+  </div>
+    <div>
+<table class="table">
+  <thead class="thead-light">
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">Food Name</th>
+      <th scope="col">Description</th>
+      <th scope="col">Price</th>
+      
+      <th scope="col"></th>
+      
+      <!-- <th scope="col">Operators</th> -->
+    </tr>
+  </thead>
+  <tbody>
+  @foreach($foods as $key => $item)
+    <tr>
+      <td><input type="hidden" name="fid[]" value="{{$item->fid}}"></td>
+      <td><input type="hidden" name="foodname[]" value="{{$item->foodname}}">{{$item->foodname}}</td>
+      <td>{{$item->dept}}</td>
+      <td><input type="hidden" name="price[]" value="{{$item->price}}">{{$item->price}}</td>
+      
+      <td width="150">
+      <div class="input-group">
+                      <button type="button" class="btn btn-default btn-xs " onclick="this.parentNode.querySelector('input[type=number]').stepDown()">
+                      <i  class="fa fa-minus"></i>
+                      </button>
+                      <input size="1" class="form-control input-number" min="0" name="quantity[]" value="0" type="number">
+                      <button type="button" class="btn btn-default btn-xs " onclick="this.parentNode.querySelector('input[type=number]').stepUp()">
+                      <i  class="fa fa-plus"></i>
+                      </button>
+                    </div>
+      </td>
+      
+      <!-- <td><a href="/edit/{{$item->id}}"><i class="fa fa-edit"></i></a></td> -->
+    </tr>
+  @endforeach
+  </tbody>
+</table>
+<div class="row d-flex justify-content-center">
+<div class="col-lg-6">
+    <div class="card mb-3">
         <div class="card-body">
         <div class="form-group">
-        <label for="exampleInputName1">Del Address</label>
+        <label for="exampleInputName1">Delivery Address</label>
         <input type="text" 
         name="daddress"
         class="form-control @error('daddress') is-invalid @enderror" 
@@ -48,57 +104,14 @@
 
         </div>
       </div>
-      <!-- Card -->
-
     </div>
-    @endcan
-    </div>
-  </div>
-    <div>
-<table class="table">
-  <thead class="thead-light">
-    <tr>
-      <th scope="col">#</th>
-      <th scope="col">Food Name</th>
-      <th scope="col">Description</th>
-      <th scope="col">Price</th>
-      @can ('order', $restaurants)
-      <th scope="col"></th>
-      @endcan
-      <!-- <th scope="col">Operators</th> -->
-    </tr>
-  </thead>
-  <tbody>
-  @foreach($foods as $key => $item)
-    <tr>
-      <td><input type="hidden" name="fid[]" value="{{$item->fid}}"></td>
-      <td><input type="hidden" name="foodname[]" value="{{$item->foodname}}">{{$item->foodname}}</td>
-      <td>{{$item->dept}}</td>
-      <td><input type="hidden" name="price[]" value="{{$item->price}}">{{$item->price}}</td>
-      @can ('order', $restaurants)
-      <td width="150">
-      <div class="input-group">
-                      <button type="button" class="btn btn-default btn-xs " onclick="this.parentNode.querySelector('input[type=number]').stepDown()">
-                      <i  class="fa fa-minus"></i>
-                      </button>
-                      <input size="1" class="form-control input-number" min="0" name="quantity[]" value="0" type="number">
-                      <button type="button" class="btn btn-default btn-xs " onclick="this.parentNode.querySelector('input[type=number]').stepUp()">
-                      <i  class="fa fa-plus"></i>
-                      </button>
-                    </div>
-      </td>
-      @endcan
-      <!-- <td><a href="/edit/{{$item->id}}"><i class="fa fa-edit"></i></a></td> -->
-    </tr>
-  @endforeach
-  </tbody>
-</table>
+</div>
 </form>
-</div>
-    @can ('update', $restaurants)
-    <div class="row justify-content-center">
-        <a href="/edit/{{$restaurants->id}}"><button class="btn btn-primary">Edit</button></a>
-    </div>
-    @endcan
-</div>
+
+				</div>	
+			</section>
+
+
+
+
 @endsection

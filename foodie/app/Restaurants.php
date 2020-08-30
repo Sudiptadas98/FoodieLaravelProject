@@ -6,9 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class Restaurants extends Model
 {
-    public function user()
+    public function owners()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Owners::class);
     }
 
     public function foods()

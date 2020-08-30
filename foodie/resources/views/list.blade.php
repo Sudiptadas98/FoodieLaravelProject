@@ -1,39 +1,43 @@
-@extends('layouts.app')
+@extends('layouts.user')
 
 @section('content')
-<div>
-  <h1>List of Restaurants..</h1>
-</div>
-@if(Session::get('status'))
-<div class="alert alert-success alert-dismissible fade show" role="alert">
-  {{Session::get('status')}}
-  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-    <span aria-hidden="true">&times;</span>
-  </button>
-</div>
-@endif
-<div>
-<table class="table">
-  <thead class="thead-light">
+
+
+<section class="blog-area section-gap" id="blog">
+				<div class="container">
+					<div class="row d-flex justify-content-center">
+						<div class="menu-content pb-70 col-lg-8">
+							<div class="title text-center">
+                <div class="typography">
+								  <h1 class="mb-10">Our Restaurants</h1>
+								  <p>Delicious Receipes</p>
+                </div>
+							</div>
+						</div>
+					</div>					
+					<div class="row">
+          <table class="table">
+  <thead class="thead">
     <tr>
       <th scope="col">ID</th>
-      <th scope="col">Restaurant</th>
-      <th scope="col">Email</th>
+      <th scope="col">Restaurant Name</th>
       <th scope="col">Address</th>
-      <!-- <th scope="col">Operators</th> -->
+      <th scope="col"></th>
     </tr>
   </thead>
   <tbody>
   @foreach($restaurants as $item)
     <tr>
       <th scope="row">{{$item->id}}</th>
-      <td><a href="/restaurant/{{$item->id}}">{{$item->restoname}}</a></td>
-      <td>{{$item->email}}</td>
+      <td>{{$item->restoname}}</td>
       <td>{{$item->address}}</td>
-      <!-- <td><a href="/edit/{{$item->id}}"><i class="fa fa-edit"></i></a></td> -->
+      <td class="text-right"><a href="/restaurant/{{$item->id}}" class="genric-btn primary-border circle arrow">Order Now<span class="lnr lnr-arrow-right"></span></a></td>
     </tr>
   @endforeach
   </tbody>
 </table>
-</div>
+				</div>	
+			</section>
+
+
 @endsection
